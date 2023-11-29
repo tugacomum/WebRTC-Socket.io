@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebRTC POC</title>
+    <link rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <!-- Add the WebRTC video elements -->
+    <div class="video-wrapper">
+      <video id="localVideo" autoplay muted></video>
+      <canvas id="drawingCanvas" width="1920" height="1080"></canvas>
+      <video id="remoteVideo" autoplay></video>
+
+      <div class="controllers-wrapper">
+        <!-- Disable camera button -->
+        <button id="disableCameraButton">
+          <img src="./enable-camera.svg" alt="" />
+        </button>
+        <!-- Mute button -->
+        <button id="muteButton">
+          <img src="./unmute.svg" alt="" />
+        </button>
+      </div>
+      <div class="draw-wrapper">
+        <button id="deleteButton" class="delete">
+          <img src="./delete.svg" alt="" />
+        </button>
+        <button id="undoButton" class="undo">
+          <img src="./undo.svg" alt="" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Include Socket.IO library -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="./main.js"></script>
+  </body>
+</html>
