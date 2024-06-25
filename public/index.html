@@ -7,22 +7,27 @@
     <link rel="stylesheet" href="main.css" />
   </head>
   <body>
-    <!-- Add the WebRTC video elements -->
+    <!-- Elementos do WebRTC -->
     <div class="video-wrapper">
       <video id="localVideo" autoplay muted></video>
+      <!-- Canvas para desenhar -->
       <canvas id="drawingCanvas" width="1920" height="1080"></canvas>
       <video id="remoteVideo" autoplay></video>
 
       <div class="controllers-wrapper">
-        <!-- Disable camera button -->
+        <!-- Butao para desligar/ligar a camara -->
         <button id="disableCameraButton">
           <img src="./enable-camera.svg" alt="" />
         </button>
-        <!-- Mute button -->
+        <!-- Butao para desligar/ligar o microfone -->
         <button id="muteButton">
           <img src="./unmute.svg" alt="" />
         </button>
+        <button id="switchCameraButton">
+          <img src="./switch-camera.svg" alt="" />
+        </button>
       </div>
+      <!-- Elementos para apagar os desenhos -->
       <div class="draw-wrapper">
         <button id="deleteButton" class="delete">
           <img src="./delete.svg" alt="" />
@@ -32,8 +37,7 @@
         </button>
       </div>
     </div>
-
-    <!-- Include Socket.IO library -->
+    <!-- Livraria Socket.io -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="./main.js"></script>
   </body>

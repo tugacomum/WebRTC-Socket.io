@@ -6,6 +6,10 @@ const roomId = urlParams.get("roomId");
 const drawingCanvas = document.getElementById("drawingCanvas");
 const deleteButton = document.getElementById("deleteButton");
 const undoButton = document.getElementById("undoButton");
+const switchCameraButton = document.getElementById("switchCameraButton");
+const localVideo = document.getElementById("localVideo");
+const remoteVideo = document.getElementById("remoteVideo");
+
 const ctx = drawingCanvas.getContext("2d");
 const drawingData = [];
 
@@ -16,8 +20,25 @@ let isCameraEnabled = true;
 let isAudioEnabled = true;
 let currentPath = [];
 let drawingPath = null;
+
 // Join the room with the specified room ID
 socket.emit("join-room", roomId);
+
+switchCameraButton.addEventListener("click", () => {
+  const localVideoStyle = window.getComputedStyle(localVideo);
+  const remoteVideoStyle = window.getComputedStyle(remoteVideo);
+
+  [localVideo.style.width, remoteVideo.style.width] = [remoteVideoStyle.width, localVideoStyle.width];
+  [localVideo.style.height, remoteVideo.style.height] = [remoteVideoStyle.height, localVideoStyle.height];
+
+  [localVideo.style.position, remoteVideo.style.position] = [remoteVideoStyle.position, localVideoStyle.position];
+  [localVideo.style.top, remoteVideo.style.top] = [remoteVideoStyle.top, localVideoStyle.top];
+  [localVideo.style.bottom, remoteVideo.style.bottom] = [remoteVideoStyle.bottom, localVideoStyle.bottom];
+  [localVideo.style.left, remoteVideo.style.left] = [remoteVideoStyle.left, localVideoStyle.left];
+  [localVideo.style.right, remoteVideo.style.right] = [remoteVideoStyle.right, localVideoStyle.right];
+  [localVideo.style.marginBottom, remoteVideo.style.marginBottom] = [remoteVideoStyle.marginBottom, localVideoStyle.marginBottom];
+  [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideoStyle.marginRight];
+});
 
 // Get the local video stream
 navigator.mediaDevices
