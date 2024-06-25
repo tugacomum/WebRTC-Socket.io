@@ -36,8 +36,9 @@ function redrawDrawings() {
 socket.emit("join-room", roomId);
 
 function resizeCanvas() {
-  drawingCanvas.width = window.innerWidth;
-  drawingCanvas.height = window.innerHeight;
+  const rect = drawingCanvas.getBoundingClientRect();
+  drawingCanvas.width = window.innerWidth - rect.left - rect.right;
+  drawingCanvas.height = window.innerHeight - rect.top - rect.bottom;
   redrawDrawings();
 }
 
@@ -56,8 +57,8 @@ switchCameraButton.addEventListener("click", () => {
   [localVideo.style.bottom, remoteVideo.style.bottom] = [remoteVideoStyle.bottom, localVideo.style.bottom];
   [localVideo.style.left, remoteVideo.style.left] = [remoteVideoStyle.left, localVideo.style.left];
   [localVideo.style.right, remoteVideo.style.right] = [remoteVideoStyle.right, localVideo.style.right];
-  [localVideo.style.marginBottom, remoteVideo.style.marginBottom] = [remoteVideoStyle.marginBottom, localVideoStyle.marginBottom];
-  [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideoStyle.marginRight];
+  [localVideo.style.marginBottom, remoteVideo.style.marginBottom] = [remoteVideoStyle.marginBottom, localVideo.style.marginBottom];
+  [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideo.style.marginRight];
 });
 
 const configuration = {
