@@ -153,6 +153,32 @@ navigator.mediaDevices
       isAudioEnabled = !isAudioEnabled;
     });
 
+    drawingCanvas.addEventListener("touchstart", (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent("mousedown", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+      drawingCanvas.dispatchEvent(mouseEvent);
+    });
+    
+    drawingCanvas.addEventListener("touchmove", (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const mouseEvent = new MouseEvent("mousemove", {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+      });
+      drawingCanvas.dispatchEvent(mouseEvent);
+    });
+    
+    drawingCanvas.addEventListener("touchend", (e) => {
+      e.preventDefault();
+      const mouseEvent = new MouseEvent("mouseup", {});
+      drawingCanvas.dispatchEvent(mouseEvent);
+    });
+
     // Draw on the canvas
 
     drawingCanvas.addEventListener("mousemove", (e) => {
@@ -167,7 +193,7 @@ navigator.mediaDevices
       draw(e);
     });
 
-    drawingCanvas.addEventListener("mouseup", () => {
+    drawingCanvas.addEventListener("mouseup", () => { 
       if (isDrawing) {
         isDrawing = false;
         socket.emit("draw", currentPath.slice());
