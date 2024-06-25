@@ -21,8 +21,28 @@ let isAudioEnabled = true;
 let currentPath = [];
 let drawingPath = null;
 
+function redrawDrawings() {
+  ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+  for (const drawing of drawingData) {
+    ctx.beginPath();
+    for (const point of drawing) {
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+    }
+  }
+}
+
 // Join the room with the specified room ID
-socket.emit("join-room", 123);
+socket.emit("join-room", roomId);
+
+function resizeCanvas() {
+  drawingCanvas.width = window.innerWidth;
+  drawingCanvas.height = window.innerHeight;
+  redrawDrawings();
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
 
 switchCameraButton.addEventListener("click", () => {
   const localVideoStyle = window.getComputedStyle(localVideo);
@@ -32,10 +52,10 @@ switchCameraButton.addEventListener("click", () => {
   [localVideo.style.height, remoteVideo.style.height] = [remoteVideoStyle.height, localVideoStyle.height];
 
   [localVideo.style.position, remoteVideo.style.position] = [remoteVideoStyle.position, localVideoStyle.position];
-  [localVideo.style.top, remoteVideo.style.top] = [remoteVideoStyle.top, localVideoStyle.top];
-  [localVideo.style.bottom, remoteVideo.style.bottom] = [remoteVideoStyle.bottom, localVideoStyle.bottom];
-  [localVideo.style.left, remoteVideo.style.left] = [remoteVideoStyle.left, localVideoStyle.left];
-  [localVideo.style.right, remoteVideo.style.right] = [remoteVideoStyle.right, localVideoStyle.right];
+  [localVideo.style.top, remoteVideo.style.top] = [remoteVideoStyle.top, localVideo.style.top];
+  [localVideo.style.bottom, remoteVideo.style.bottom] = [remoteVideoStyle.bottom, localVideo.style.bottom];
+  [localVideo.style.left, remoteVideo.style.left] = [remoteVideoStyle.left, localVideo.style.left];
+  [localVideo.style.right, remoteVideo.style.right] = [remoteVideoStyle.right, localVideo.style.right];
   [localVideo.style.marginBottom, remoteVideo.style.marginBottom] = [remoteVideoStyle.marginBottom, localVideoStyle.marginBottom];
   [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideoStyle.marginRight];
 });
@@ -48,7 +68,6 @@ const configuration = {
 navigator.mediaDevices
   .getUserMedia({ video: true, audio: true })
   .then((stream) => {
-    const localVideo = document.getElementById("localVideo");
     localVideo.srcObject = stream;
     localVideo.style.transform = "scaleX(-1)";
 
@@ -69,7 +88,6 @@ navigator.mediaDevices
 
     // Listen for remote tracks and add them to the remote video element
     peerConnection.addEventListener("track", (event) => {
-      const remoteVideo = document.getElementById("remoteVideo");
       if (!remoteVideo.srcObject) {
         remoteVideo.srcObject = new MediaStream();
         remoteVideo.style.transform = "scaleX(-1)";
@@ -92,9 +110,7 @@ navigator.mediaDevices
     socket.on("offer", (offer) => {
       peerConnection
         .setRemoteDescription(offer)
-        .then(() => {
-          return peerConnection.createAnswer();
-        })
+        .then(() => peerConnection.createAnswer())
         .then((answer) => {
           socket.emit("answer", answer);
           return peerConnection.setLocalDescription(answer);
@@ -134,6 +150,7 @@ navigator.mediaDevices
       }
       isCameraEnabled = !isCameraEnabled;
     });
+
     // Mute/unmute the audio
     const muteButton = document.getElementById("muteButton");
     muteButton.addEventListener("click", () => {
@@ -141,13 +158,11 @@ navigator.mediaDevices
         stream.getAudioTracks().forEach((track) => {
           track.enabled = false;
         });
-        // muteButton.textContent = "Unmute";
         muteButton.querySelector("img").src = "./mute.svg";
       } else {
         stream.getAudioTracks().forEach((track) => {
           track.enabled = true;
         });
-        // muteButton.textContent = "Mute";
         muteButton.querySelector("img").src = "./unmute.svg";
       }
       isAudioEnabled = !isAudioEnabled;
@@ -162,7 +177,7 @@ navigator.mediaDevices
       });
       drawingCanvas.dispatchEvent(mouseEvent);
     });
-    
+
     drawingCanvas.addEventListener("touchmove", (e) => {
       e.preventDefault();
       const touch = e.touches[0];
@@ -172,7 +187,7 @@ navigator.mediaDevices
       });
       drawingCanvas.dispatchEvent(mouseEvent);
     });
-    
+
     drawingCanvas.addEventListener("touchend", (e) => {
       e.preventDefault();
       const mouseEvent = new MouseEvent("mouseup", {});
@@ -180,7 +195,6 @@ navigator.mediaDevices
     });
 
     // Draw on the canvas
-
     drawingCanvas.addEventListener("mousemove", (e) => {
       if (isDrawing) {
         draw(e);
@@ -193,7 +207,7 @@ navigator.mediaDevices
       draw(e);
     });
 
-    drawingCanvas.addEventListener("mouseup", () => { 
+    drawingCanvas.addEventListener("mouseup", () => {
       if (isDrawing) {
         isDrawing = false;
         socket.emit("draw", currentPath.slice());
@@ -237,37 +251,26 @@ navigator.mediaDevices
       if (drawingData.length > 0) {
         drawingData.pop(); // Remove the last drawing
         redrawDrawings();
-      } 
+      }
     }
 
     function draw(e) {
       const rect = drawingCanvas.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const y = e.clientY - rect.top;
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
 
-  ctx.lineWidth = 1;
-  ctx.lineCap = "round";
-  ctx.strokeStyle = "red";
+      ctx.lineWidth = 1;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "red";
 
-  currentPath.push({ x, y });
+      currentPath.push({ x, y });
 
-  ctx.beginPath();
-  if (currentPath.length > 1) {
-    const prevPoint = currentPath[currentPath.length - 2];
-    ctx.moveTo(prevPoint.x, prevPoint.y);
-    ctx.lineTo(x, y);
-    ctx.stroke();
-  }
-    }
-
-    function redrawDrawings() {
-      ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-      for (const drawing of drawingData) {
-        ctx.beginPath();
-        for (const point of drawing) {
-          ctx.lineTo(point.x, point.y);
-          ctx.stroke();
-        }
+      ctx.beginPath();
+      if (currentPath.length > 1) {
+        const prevPoint = currentPath[currentPath.length - 2];
+        ctx.moveTo(prevPoint.x, prevPoint.y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
       }
     }
   })
