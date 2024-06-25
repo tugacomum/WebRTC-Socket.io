@@ -241,22 +241,23 @@ navigator.mediaDevices
     }
 
     function draw(e) {
-      const x = e.clientX - drawingCanvas.getBoundingClientRect().left;
-      const y = e.clientY - drawingCanvas.getBoundingClientRect().top;
-    
-      ctx.lineWidth = 1;
-      ctx.lineCap = "round";
-      ctx.strokeStyle = "red";
-    
-      currentPath.push({ x, y });
-    
-      ctx.beginPath();
-      if (currentPath.length > 1) {
-        const prevPoint = currentPath[currentPath.length - 2];
-        ctx.moveTo(prevPoint.x, prevPoint.y);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-      }
+      const rect = drawingCanvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+
+  ctx.lineWidth = 1;
+  ctx.lineCap = "round";
+  ctx.strokeStyle = "red";
+
+  currentPath.push({ x, y });
+
+  ctx.beginPath();
+  if (currentPath.length > 1) {
+    const prevPoint = currentPath[currentPath.length - 2];
+    ctx.moveTo(prevPoint.x, prevPoint.y);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }
     }
 
     function redrawDrawings() {
