@@ -22,7 +22,7 @@ let currentPath = [];
 let drawingPath = null;
 
 // Join the room with the specified room ID
-socket.emit("join-room", roomId);
+socket.emit("join-room", 123);
 
 switchCameraButton.addEventListener("click", () => {
   const localVideoStyle = window.getComputedStyle(localVideo);
