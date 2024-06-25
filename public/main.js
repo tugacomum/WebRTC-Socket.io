@@ -40,6 +40,10 @@ switchCameraButton.addEventListener("click", () => {
   [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideoStyle.marginRight];
 });
 
+const configuration = {
+  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+};
+
 // Get the local video stream
 navigator.mediaDevices
   .getUserMedia({ video: true, audio: true })
@@ -49,7 +53,7 @@ navigator.mediaDevices
     localVideo.style.transform = "scaleX(-1)";
 
     // Create a new WebRTC peer connection
-    const peerConnection = new RTCPeerConnection();
+    const peerConnection = new RTCPeerConnection(configuration);
 
     // Add the local stream to the peer connection
     stream.getTracks().forEach((track) => {
