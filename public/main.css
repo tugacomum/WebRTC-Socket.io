@@ -15,29 +15,29 @@ canvas {
 }
 
 .video-wrapper {
-  height: 100%; /* Ensure it covers the entire viewport height */
-  width: 100%;  /* Ensure it covers the entire viewport width */
-  position: relative;
+  height: 100%;
+  width: 100%;
+  position: relative; /* Garante que os vídeos estejam posicionados relativamente a este contêiner */
   display: flex;
   align-items: center;
-  overflow: hidden; /* Prevent overflow */
+  overflow: hidden;
 }
 
 .video-wrapper #remoteVideo {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  position: absolute !important; 
 }
 
 .video-wrapper #localVideo {
   width: 250px;
   height: 150px;
-  position: absolute;
+  position: absolute !important;
   bottom: 0;
   right: 0;
   margin-bottom: 16px;
   margin-right: 16px;
-  z-index: 2;
   object-fit: cover;
 }
 
@@ -95,6 +95,7 @@ canvas {
 
 .draw-wrapper #deleteButton img,
 .draw-wrapper #fullScreenButton img,
+.draw-wrapper #switchLocalVideoButton img,
 .draw-wrapper #undoButton img {
   width: 50%;
 }

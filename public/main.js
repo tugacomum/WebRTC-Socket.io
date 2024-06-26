@@ -9,6 +9,7 @@ const undoButton = document.getElementById("undoButton");
 const switchCameraButton = document.getElementById("switchCameraButton");
 const fullScreenButton = document.getElementById("fullScreenButton");
 const disableCameraButton = document.getElementById("disableCameraButton");
+const switchPositionButton = document.getElementById("switchLocalVideoButton");
 const muteButton = document.getElementById("muteButton");
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
@@ -114,6 +115,7 @@ async function getMediaStream(constraints) {
 async function getVideoDevices() {
   const devices = await navigator.mediaDevices.enumerateDevices();
   videoDevices = devices.filter(device => device.kind === 'videoinput');
+  console.log("Video devices:", videoDevices);
 }
 
 async function switchCamera() {
@@ -236,6 +238,49 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       }
       isAudioEnabled = !isAudioEnabled;
     });
+
+    switchPositionButton.addEventListener("click", () => {
+      // Obter as posições e tamanhos atuais dos vídeos
+      const localVideoRect = localVideo.getBoundingClientRect();
+      const localVideoPosition = {
+        top: localVideoRect.top,
+        left: localVideoRect.left,
+        width: localVideoRect.width,
+        height: localVideoRect.height,
+      };
+    
+      const remoteVideoRect = remoteVideo.getBoundingClientRect();
+      const remoteVideoPosition = {
+        top: remoteVideoRect.top,
+        left: remoteVideoRect.left,
+        width: remoteVideoRect.width,
+        height: remoteVideoRect.height,
+      };
+    
+      // Trocar os vídeos de posição sem removê-los dos seus pais
+      localVideo.style.position = "absolute";
+      localVideo.style.top = remoteVideoPosition.top + "px";
+      localVideo.style.left = remoteVideoPosition.left + "px";
+      localVideo.style.width = remoteVideoPosition.width + "px";
+      localVideo.style.height = remoteVideoPosition.height + "px";
+      localVideo.style.zIndex = "0"; // Definir zIndex menor para o vídeo local
+    
+      remoteVideo.style.position = "absolute";
+      remoteVideo.style.top = localVideoPosition.top + "px";
+      remoteVideo.style.left = localVideoPosition.left + "px";
+      remoteVideo.style.width = localVideoPosition.width + "px";
+      remoteVideo.style.height = localVideoPosition.height + "px";
+      remoteVideo.style.zIndex = "1"; 
+    
+      // Trocar os vídeos de pais para reajustar a ordem visualmente
+      
+    
+      // Redefinir os estilos de exibição dos botões
+      const controllersWrapper = document.querySelector(".controllers-wrapper");
+      const drawWrapper = document.querySelector(".draw-wrapper");
+      controllersWrapper.style.display = "flex";
+      drawWrapper.style.display = "flex";
+    });  
 
     drawingCanvas.addEventListener("touchstart", (e) => {
       e.preventDefault();
