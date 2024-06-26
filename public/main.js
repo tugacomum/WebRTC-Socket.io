@@ -32,13 +32,35 @@ function redrawDrawings() {
   }
 }
 
+function activateFullScreen() {
+  const elem = document.documentElement;  // Elemento raiz (todo o documento)
+
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.webkitRequestFullscreen) { /* Safari */
+    elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+  } else if (elem.msRequestFullscreen) { /* IE11 */
+    elem.msRequestFullscreen();
+  } else if (elem.webkitEnterFullscreen) { /* WebKit browsers */
+    elem.webkitEnterFullscreen();
+  }
+}
+
+// Encontrar o botão de tela cheia e adicionar um ouvinte de evento
+  const fullScreenButton = document.getElementById("fullScreenButton");
+  fullScreenButton.addEventListener("click", () => {
+    activateFullScreen();
+  });
+
+  // Restante do seu código aqui...
+
+
 // Join the room with the specified room ID
 socket.emit("join-room", roomId);
 
 function resizeCanvas() {
-  const rect = drawingCanvas.getBoundingClientRect();
-  drawingCanvas.width = window.innerWidth - rect.left - rect.right;
-  drawingCanvas.height = window.innerHeight - rect.top - rect.bottom;
+  drawingCanvas.width = window.innerWidth;
+  drawingCanvas.height = window.innerHeight;
   redrawDrawings();
 }
 
@@ -53,12 +75,12 @@ switchCameraButton.addEventListener("click", () => {
   [localVideo.style.height, remoteVideo.style.height] = [remoteVideoStyle.height, localVideoStyle.height];
 
   [localVideo.style.position, remoteVideo.style.position] = [remoteVideoStyle.position, localVideoStyle.position];
-  [localVideo.style.top, remoteVideo.style.top] = [remoteVideoStyle.top, localVideo.style.top];
-  [localVideo.style.bottom, remoteVideo.style.bottom] = [remoteVideoStyle.bottom, localVideo.style.bottom];
-  [localVideo.style.left, remoteVideo.style.left] = [remoteVideoStyle.left, localVideo.style.left];
-  [localVideo.style.right, remoteVideo.style.right] = [remoteVideoStyle.right, localVideo.style.right];
-  [localVideo.style.marginBottom, remoteVideo.style.marginBottom] = [remoteVideoStyle.marginBottom, localVideo.style.marginBottom];
-  [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideo.style.marginRight];
+  [localVideo.style.top, remoteVideo.style.top] = [remoteVideoStyle.top, localVideoStyle.top];
+  [localVideo.style.bottom, remoteVideo.style.bottom] = [remoteVideoStyle.bottom, localVideoStyle.bottom];
+  [localVideo.style.left, remoteVideo.style.left] = [remoteVideoStyle.left, localVideoStyle.left];
+  [localVideo.style.right, remoteVideo.style.right] = [remoteVideoStyle.right, localVideoStyle.right];
+  [localVideo.style.marginBottom, remoteVideo.style.marginBottom] = [remoteVideoStyle.marginBottom, localVideoStyle.marginBottom];
+  [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideoStyle.marginRight];
 });
 
 const configuration = {

@@ -15,11 +15,10 @@ canvas {
 }
 
 .video-wrapper {
-  height: 100vh; /* Ensure it covers the entire viewport height */
-  width: 100vw;  /* Ensure it covers the entire viewport width */
+  height: 100%; /* Ensure it covers the entire viewport height */
+  width: 100%;  /* Ensure it covers the entire viewport width */
   position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
   overflow: hidden; /* Prevent overflow */
 }
@@ -43,16 +42,14 @@ canvas {
 }
 
 .video-wrapper .controllers-wrapper {
-  background-color: rgba(0, 0, 0, 0.5);
   position: absolute;
   z-index: 2;
-  bottom: 0;
+  bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
   border-radius: 8px;
 }
 
@@ -79,8 +76,7 @@ canvas {
   position: absolute;
   z-index: 2;
   bottom: 16px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-left: 16px;
   display: flex;
   gap: 16px;
 }
@@ -98,6 +94,7 @@ canvas {
 }
 
 .draw-wrapper #deleteButton img,
+.draw-wrapper #fullScreenButton img,
 .draw-wrapper #undoButton img {
   width: 50%;
 }
