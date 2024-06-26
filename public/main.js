@@ -46,16 +46,12 @@ function activateFullScreen() {
   }
 }
 
-// Encontrar o botão de tela cheia e adicionar um ouvinte de evento
   const fullScreenButton = document.getElementById("fullScreenButton");
   fullScreenButton.addEventListener("click", () => {
     activateFullScreen();
   });
 
-  // Restante do seu código aqui...
 
-
-// Join the room with the specified room ID
 socket.emit("join-room", roomId);
 
 function resizeCanvas() {
@@ -84,8 +80,15 @@ switchCameraButton.addEventListener("click", () => {
 });
 
 const configuration = {
-  iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-};
+  iceServers: [
+    { urls: 'stun:stun.l.google.com:19302' },
+    {
+      urls: 'turn:relay1.expressturn.com:3478',
+      username: 'efIIQSJUEZCHJP1T05',
+      credential: 'fJormf7nIWyWoY78'
+    }
+  ]
+}
 
 // Get the local video stream
 navigator.mediaDevices
