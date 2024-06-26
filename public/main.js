@@ -7,6 +7,9 @@ const drawingCanvas = document.getElementById("drawingCanvas");
 const deleteButton = document.getElementById("deleteButton");
 const undoButton = document.getElementById("undoButton");
 const switchCameraButton = document.getElementById("switchCameraButton");
+const fullScreenButton = document.getElementById("fullScreenButton");
+const disableCameraButton = document.getElementById("disableCameraButton");
+const muteButton = document.getElementById("muteButton");
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
 
@@ -33,24 +36,39 @@ function redrawDrawings() {
 }
 
 function activateFullScreen() {
-  const elem = document.documentElement;  // Elemento raiz (todo o documento)
+  const elem = document.documentElement; // Elemento raiz (todo o documento)
 
   if (elem.requestFullscreen) {
     elem.requestFullscreen();
-  } else if (elem.webkitRequestFullscreen) { /* Safari */
+  } else if (elem.webkitRequestFullscreen) {
     elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-  } else if (elem.msRequestFullscreen) { /* IE11 */
+  } else if (elem.msRequestFullscreen) {
     elem.msRequestFullscreen();
-  } else if (elem.webkitEnterFullscreen) { /* WebKit browsers */
+  } else if (elem.webkitEnterFullscreen) {
     elem.webkitEnterFullscreen();
   }
 }
 
-  const fullScreenButton = document.getElementById("fullScreenButton");
-  fullScreenButton.addEventListener("click", () => {
-    activateFullScreen();
-  });
+function adjustVideoSizes() {
+  const isFullScreen = document.fullscreenElement || document.webkitFullscreenElement;
+  if (isFullScreen) {
+    remoteVideo.style.width = "100%";
+    remoteVideo.style.height = "100%";
+    remoteVideo.style.position = "fixed";
+    remoteVideo.style.top = "0";
+    remoteVideo.style.left = "0";
+  } else {
+    remoteVideo.style.width = "";
+    remoteVideo.style.height = "";
+    remoteVideo.style.position = "";
+    remoteVideo.style.top = "";
+    remoteVideo.style.left = "";
+  }
+}
 
+fullScreenButton.addEventListener("click", () => {
+  activateFullScreen();
+});
 
 socket.emit("join-room", roomId);
 
@@ -63,39 +81,66 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-switchCameraButton.addEventListener("click", () => {
-  const localVideoStyle = window.getComputedStyle(localVideo);
-  const remoteVideoStyle = window.getComputedStyle(remoteVideo);
+function onFullScreenChange() {
+  adjustVideoSizes();
+}
 
-  [localVideo.style.width, remoteVideo.style.width] = [remoteVideoStyle.width, localVideoStyle.width];
-  [localVideo.style.height, remoteVideo.style.height] = [remoteVideoStyle.height, localVideoStyle.height];
-
-  [localVideo.style.position, remoteVideo.style.position] = [remoteVideoStyle.position, localVideoStyle.position];
-  [localVideo.style.top, remoteVideo.style.top] = [remoteVideoStyle.top, localVideoStyle.top];
-  [localVideo.style.bottom, remoteVideo.style.bottom] = [remoteVideoStyle.bottom, localVideoStyle.bottom];
-  [localVideo.style.left, remoteVideo.style.left] = [remoteVideoStyle.left, localVideoStyle.left];
-  [localVideo.style.right, remoteVideo.style.right] = [remoteVideoStyle.right, localVideoStyle.right];
-  [localVideo.style.marginBottom, remoteVideo.style.marginBottom] = [remoteVideoStyle.marginBottom, localVideoStyle.marginBottom];
-  [localVideo.style.marginRight, remoteVideo.style.marginRight] = [remoteVideoStyle.marginRight, localVideoStyle.marginRight];
-});
+document.addEventListener("fullscreenchange", onFullScreenChange);
+document.addEventListener("webkitfullscreenchange", onFullScreenChange);
+document.addEventListener("mozfullscreenchange", onFullScreenChange);
+document.addEventListener("MSFullscreenChange", onFullScreenChange);
 
 const configuration = {
   iceServers: [
-    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: "stun:stun.l.google.com:19302" },
     {
-      urls: 'turn:relay1.expressturn.com:3478',
-      username: 'efIIQSJUEZCHJP1T05',
-      credential: 'fJormf7nIWyWoY78'
-    }
-  ]
-}
+      urls: "turn:relay1.expressturn.com:3478",
+      username: "efIIQSJUEZCHJP1T05",
+      credential: "fJormf7nIWyWoY78",
+    },
+  ],
+};
+
+let currentStream = null;
+let currentCameraIndex = 0;
+let videoDevices = [];
 
 // Get the local video stream
-navigator.mediaDevices
-  .getUserMedia({ video: true, audio: true })
-  .then((stream) => {
+async function getMediaStream(constraints) {
+  const stream = await navigator.mediaDevices.getUserMedia(constraints);
+  return stream;
+}
+
+async function getVideoDevices() {
+  const devices = await navigator.mediaDevices.enumerateDevices();
+  videoDevices = devices.filter(device => device.kind === 'videoinput');
+}
+
+async function switchCamera() {
+  if (videoDevices.length > 1) {
+    currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
+    const constraints = {
+      video: { deviceId: videoDevices[currentCameraIndex].deviceId },
+      audio: true
+    };
+    if (currentStream) {
+      currentStream.getTracks().forEach(track => track.stop());
+    }
+    currentStream = await getMediaStream(constraints);
+    localVideo.srcObject = currentStream;
+  }
+}
+
+switchCameraButton.addEventListener("click", () => {
+  switchCamera();
+});
+
+navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+  .then(async (stream) => {
+    currentStream = stream;
     localVideo.srcObject = stream;
     localVideo.style.transform = "scaleX(-1)";
+    await getVideoDevices();
 
     // Create a new WebRTC peer connection
     const peerConnection = new RTCPeerConnection(configuration);
@@ -161,7 +206,6 @@ navigator.mediaDevices
     });
 
     // Disable or enable the camera
-    const disableCameraButton = document.getElementById("disableCameraButton");
     disableCameraButton.addEventListener("click", () => {
       if (isCameraEnabled) {
         stream.getVideoTracks().forEach((track) => {
@@ -178,7 +222,6 @@ navigator.mediaDevices
     });
 
     // Mute/unmute the audio
-    const muteButton = document.getElementById("muteButton");
     muteButton.addEventListener("click", () => {
       if (isAudioEnabled) {
         stream.getAudioTracks().forEach((track) => {
