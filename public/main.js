@@ -32,26 +32,6 @@ function redrawDrawings() {
   }
 }
 
-function activateFullScreen() {
-  const elem = document.documentElement; // Elemento raiz (todo o documento)
-
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.webkitRequestFullscreen) {
-    /* Safari */
-    elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
-  } else if (elem.msRequestFullscreen) {
-    elem.msRequestFullscreen();
-  } else if (elem.webkitEnterFullscreen) {
-    elem.webkitEnterFullscreen();
-  }
-}
-
-const fullScreenButton = document.getElementById("fullScreenButton");
-fullScreenButton.addEventListener("click", () => {
-  activateFullScreen();
-});
-
 socket.emit("join-room", roomId);
 
 function resizeCanvas() {
@@ -64,31 +44,43 @@ window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
 switchCameraButton.addEventListener("click", () => {
+  // Guardar referências aos vídeos
   const localVideo = document.getElementById("localVideo");
   const remoteVideo = document.getElementById("remoteVideo");
-  const controllersWrapper = document.querySelector(".controllers-wrapper");
-  const drawWrapper = document.querySelector(".draw-wrapper");
 
-  const tempVideo = localVideo.srcObject;
+  // Guardar os estilos atuais dos vídeos
+  const localVideoStyles = {
+    width: localVideo.style.width,
+    height: localVideo.style.height,
+    position: localVideo.style.position,
+    top: localVideo.style.top,
+    bottom: localVideo.style.bottom,
+    left: localVideo.style.left,
+    right: localVideo.style.right,
+    marginBottom: localVideo.style.marginBottom,
+    marginRight: localVideo.style.marginRight,
+  };
+
+  const remoteVideoStyles = {
+    width: remoteVideo.style.width,
+    height: remoteVideo.style.height,
+    position: remoteVideo.style.position,
+    top: remoteVideo.style.top,
+    bottom: remoteVideo.style.bottom,
+    left: remoteVideo.style.left,
+    right: remoteVideo.style.right,
+    marginBottom: remoteVideo.style.marginBottom,
+    marginRight: remoteVideo.style.marginRight,
+  };
+
+  // Trocar os vídeos entre si
+  const tempStream = localVideo.srcObject;
   localVideo.srcObject = remoteVideo.srcObject;
-  remoteVideo.srcObject = tempVideo;
+  remoteVideo.srcObject = tempStream;
 
-  localVideo.style.width = "250px";
-  localVideo.style.height = "150px";
-  localVideo.style.position = "absolute";
-  localVideo.style.bottom = "0";
-  localVideo.style.right = "0";
-  localVideo.style.marginBottom = "16px";
-  localVideo.style.marginRight = "16px";
-
-  remoteVideo.style.width = "100%";
-  remoteVideo.style.height = "100%";
-  remoteVideo.style.position = "absolute";
-  remoteVideo.style.top = "0";
-  remoteVideo.style.left = "0";
-
-  controllersWrapper.style.display = "flex";
-  drawWrapper.style.display = "flex";
+  // Aplicar estilos aos vídeos após a troca
+  Object.assign(localVideo.style, remoteVideoStyles);
+  Object.assign(remoteVideo.style, localVideoStyles);
 });
 
 const configuration = {
