@@ -7,10 +7,6 @@ const drawingCanvas = document.getElementById("drawingCanvas");
 const deleteButton = document.getElementById("deleteButton");
 const undoButton = document.getElementById("undoButton");
 const switchCameraButton = document.getElementById("switchCameraButton");
-const fullScreenButton = document.getElementById("fullScreenButton");
-const disableCameraButton = document.getElementById("disableCameraButton");
-const switchPositionButton = document.getElementById("switchLocalVideoButton");
-const muteButton = document.getElementById("muteButton");
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
 
@@ -42,6 +38,7 @@ function activateFullScreen() {
   if (elem.requestFullscreen) {
     elem.requestFullscreen();
   } else if (elem.webkitRequestFullscreen) {
+    /* Safari */
     elem.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
   } else if (elem.msRequestFullscreen) {
     elem.msRequestFullscreen();
@@ -50,23 +47,7 @@ function activateFullScreen() {
   }
 }
 
-function adjustVideoSizes() {
-  const isFullScreen = document.fullscreenElement || document.webkitFullscreenElement;
-  if (isFullScreen) {
-    remoteVideo.style.width = "100%";
-    remoteVideo.style.height = "100%";
-    remoteVideo.style.position = "fixed";
-    remoteVideo.style.top = "0";
-    remoteVideo.style.left = "0";
-  } else {
-    remoteVideo.style.width = "";
-    remoteVideo.style.height = "";
-    remoteVideo.style.position = "";
-    remoteVideo.style.top = "";
-    remoteVideo.style.left = "";
-  }
-}
-
+const fullScreenButton = document.getElementById("fullScreenButton");
 fullScreenButton.addEventListener("click", () => {
   activateFullScreen();
 });
@@ -82,14 +63,33 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-function onFullScreenChange() {
-  adjustVideoSizes();
-}
+switchCameraButton.addEventListener("click", () => {
+  const localVideo = document.getElementById("localVideo");
+  const remoteVideo = document.getElementById("remoteVideo");
+  const controllersWrapper = document.querySelector(".controllers-wrapper");
+  const drawWrapper = document.querySelector(".draw-wrapper");
 
-document.addEventListener("fullscreenchange", onFullScreenChange);
-document.addEventListener("webkitfullscreenchange", onFullScreenChange);
-document.addEventListener("mozfullscreenchange", onFullScreenChange);
-document.addEventListener("MSFullscreenChange", onFullScreenChange);
+  const tempVideo = localVideo.srcObject;
+  localVideo.srcObject = remoteVideo.srcObject;
+  remoteVideo.srcObject = tempVideo;
+
+  localVideo.style.width = "250px";
+  localVideo.style.height = "150px";
+  localVideo.style.position = "absolute";
+  localVideo.style.bottom = "0";
+  localVideo.style.right = "0";
+  localVideo.style.marginBottom = "16px";
+  localVideo.style.marginRight = "16px";
+
+  remoteVideo.style.width = "100%";
+  remoteVideo.style.height = "100%";
+  remoteVideo.style.position = "absolute";
+  remoteVideo.style.top = "0";
+  remoteVideo.style.left = "0";
+
+  controllersWrapper.style.display = "flex";
+  drawWrapper.style.display = "flex";
+});
 
 const configuration = {
   iceServers: [
@@ -102,47 +102,12 @@ const configuration = {
   ],
 };
 
-let currentStream = null;
-let currentCameraIndex = 0;
-let videoDevices = [];
-
 // Get the local video stream
-async function getMediaStream(constraints) {
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  return stream;
-}
-
-async function getVideoDevices() {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  videoDevices = devices.filter(device => device.kind === 'videoinput');
-  console.log("Video devices:", videoDevices);
-}
-
-async function switchCamera() {
-  if (videoDevices.length > 1) {
-    currentCameraIndex = (currentCameraIndex + 1) % videoDevices.length;
-    const constraints = {
-      video: { deviceId: videoDevices[currentCameraIndex].deviceId },
-      audio: true
-    };
-    if (currentStream) {
-      currentStream.getTracks().forEach(track => track.stop());
-    }
-    currentStream = await getMediaStream(constraints);
-    localVideo.srcObject = currentStream;
-  }
-}
-
-switchCameraButton.addEventListener("click", () => {
-  switchCamera();
-});
-
-navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-  .then(async (stream) => {
-    currentStream = stream;
+navigator.mediaDevices
+  .getUserMedia({ video: true, audio: true })
+  .then((stream) => {
     localVideo.srcObject = stream;
     localVideo.style.transform = "scaleX(-1)";
-    await getVideoDevices();
 
     // Create a new WebRTC peer connection
     const peerConnection = new RTCPeerConnection(configuration);
@@ -208,6 +173,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     });
 
     // Disable or enable the camera
+    const disableCameraButton = document.getElementById("disableCameraButton");
     disableCameraButton.addEventListener("click", () => {
       if (isCameraEnabled) {
         stream.getVideoTracks().forEach((track) => {
@@ -224,6 +190,7 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
     });
 
     // Mute/unmute the audio
+    const muteButton = document.getElementById("muteButton");
     muteButton.addEventListener("click", () => {
       if (isAudioEnabled) {
         stream.getAudioTracks().forEach((track) => {
@@ -238,49 +205,6 @@ navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       }
       isAudioEnabled = !isAudioEnabled;
     });
-
-    switchPositionButton.addEventListener("click", () => {
-      // Obter as posições e tamanhos atuais dos vídeos
-      const localVideoRect = localVideo.getBoundingClientRect();
-      const localVideoPosition = {
-        top: localVideoRect.top,
-        left: localVideoRect.left,
-        width: localVideoRect.width,
-        height: localVideoRect.height,
-      };
-    
-      const remoteVideoRect = remoteVideo.getBoundingClientRect();
-      const remoteVideoPosition = {
-        top: remoteVideoRect.top,
-        left: remoteVideoRect.left,
-        width: remoteVideoRect.width,
-        height: remoteVideoRect.height,
-      };
-    
-      // Trocar os vídeos de posição sem removê-los dos seus pais
-      localVideo.style.position = "absolute";
-      localVideo.style.top = remoteVideoPosition.top + "px";
-      localVideo.style.left = remoteVideoPosition.left + "px";
-      localVideo.style.width = remoteVideoPosition.width + "px";
-      localVideo.style.height = remoteVideoPosition.height + "px";
-      localVideo.style.zIndex = "0"; // Definir zIndex menor para o vídeo local
-    
-      remoteVideo.style.position = "absolute";
-      remoteVideo.style.top = localVideoPosition.top + "px";
-      remoteVideo.style.left = localVideoPosition.left + "px";
-      remoteVideo.style.width = localVideoPosition.width + "px";
-      remoteVideo.style.height = localVideoPosition.height + "px";
-      remoteVideo.style.zIndex = "1"; 
-    
-      // Trocar os vídeos de pais para reajustar a ordem visualmente
-      
-    
-      // Redefinir os estilos de exibição dos botões
-      const controllersWrapper = document.querySelector(".controllers-wrapper");
-      const drawWrapper = document.querySelector(".draw-wrapper");
-      controllersWrapper.style.display = "flex";
-      drawWrapper.style.display = "flex";
-    });  
 
     drawingCanvas.addEventListener("touchstart", (e) => {
       e.preventDefault();

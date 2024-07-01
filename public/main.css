@@ -39,6 +39,7 @@ canvas {
   margin-bottom: 16px;
   margin-right: 16px;
   object-fit: cover;
+  z-index: 3;
 }
 
 .video-wrapper .controllers-wrapper {
