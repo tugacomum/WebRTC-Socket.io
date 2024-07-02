@@ -102,10 +102,6 @@ canvas {
   width: 50%;
 }
 
-.controllers-wrapper #swipCameraButton {
-  display: none;
-}
-
 .draw-wrapper #fullScreenButton {
   width: 48px;
   height: 48px;
@@ -118,26 +114,6 @@ canvas {
   justify-content: center;
 }
 
-.draw-wrapper #fullScreenButton {
-  display: none;
-}
-
 .draw-wrapper #fullScreenButton img {
   width: 50%;
-}
-
-.mobile-only > img {
-  display: none;
-}
-
-@media (max-width: 768px) {
-  .draw-wrapper #fullScreenButton {
-    display: flex;
-  }
-  .controllers-wrapper #swipCameraButton {
-    display: flex;
-  }
-  .mobile-only > img {
-    display: block;
-  }
 }

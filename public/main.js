@@ -96,7 +96,7 @@ function showFullScreenPrompt() {
       if (confirmFullScreen) {
         toggleFullScreen();
       }
-    }
+    } else console.log("tas em desktop")
   });
 }
 
