@@ -106,13 +106,36 @@ canvas {
   display: none;
 }
 
+.draw-wrapper #fullScreenButton {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.draw-wrapper #fullScreenButton {
+  display: none;
+}
+
+.draw-wrapper #fullScreenButton img {
+  width: 50%;
+}
+
 .mobile-only > img {
   display: none;
 }
 
 @media (max-width: 768px) {
+  .draw-wrapper #fullScreenButton {
+    display: flex;
+  }
   .controllers-wrapper #swipCameraButton {
-    display:flex;
+    display: flex;
   }
   .mobile-only > img {
     display: block;

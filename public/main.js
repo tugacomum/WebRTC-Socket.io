@@ -19,10 +19,10 @@ let isAudioEnabled = true;
 let currentPath = [];
 let drawingPath = null;
 
-let currentFacingMode = 'user';
+let currentFacingMode = "user";
 
 switchCameraDeviceButton.addEventListener("click", () => {
-  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+  currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
   switchCameraStream();
 });
 
@@ -32,12 +32,14 @@ function switchCameraStream() {
     .then((stream) => {
       const localVideo = document.getElementById("localVideo");
       const tracks = localVideo.srcObject.getTracks();
-      
-      tracks.forEach(track => track.stop());
+
+      tracks.forEach((track) => track.stop());
 
       localVideo.srcObject = stream;
-      
-      const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
+
+      const sender = peerConnection
+        .getSenders()
+        .find((s) => s.track.kind === "video");
       sender.replaceTrack(stream.getVideoTracks()[0]);
     })
     .catch((error) => {
@@ -46,27 +48,59 @@ function switchCameraStream() {
 }
 
 function isMobileDevice() {
-  return /Mobi|Android/i.test(navigator.userAgent);
+  return (
+    typeof window.orientation !== "undefined" ||
+    navigator.userAgent.indexOf("IEMobile") !== -1
+  );
 }
 
-if (isMobileDevice()) {
-  if (confirm("Deseja entrar em modo de tela cheia?")) {
-    enterFullScreen();
+function toggleFullScreen() {
+  if (
+    !document.fullscreenElement &&
+    !document.mozFullScreenElement &&
+    !document.webkitFullscreenElement &&
+    !document.msFullscreenElement
+  ) {
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.msRequestFullscreen) {
+      document.documentElement.msRequestFullscreen();
+    } else if (document.documentElement.mozRequestFullScreen) {
+      document.documentElement.mozRequestFullScreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen(
+        Element.ALLOW_KEYBOARD_INPUT
+      );
+    }
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    } else if (document.mozCancelFullScreen) {
+      document.mozCancelFullScreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    }
   }
 }
 
-function enterFullScreen() {
-  const elem = document.documentElement;
-  if (elem.requestFullscreen) {
-    elem.requestFullscreen();
-  } else if (elem.mozRequestFullScreen) { 
-    elem.mozRequestFullScreen();
-  } else if (elem.webkitRequestFullscreen) { 
-    elem.webkitRequestFullscreen();
-  } else if (elem.msRequestFullscreen) { 
-    elem.msRequestFullscreen();
-  }
+function showFullScreenPrompt() {
+  const fullScreenButton = document.getElementById("fullScreenButton");
+
+  fullScreenButton.addEventListener("click", () => {
+    if (isMobileDevice()) {
+      const confirmFullScreen = confirm(
+        "Do you want to enter fullscreen mode for a better experience?"
+      );
+      if (confirmFullScreen) {
+        toggleFullScreen();
+      }
+    }
+  });
 }
+
+showFullScreenPrompt();
 
 function redrawDrawings() {
   ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
