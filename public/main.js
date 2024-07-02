@@ -81,6 +81,15 @@ switchCameraButton.addEventListener("click", () => {
   // Aplicar estilos aos vídeos após a troca
   Object.assign(localVideo.style, remoteVideoStyles);
   Object.assign(remoteVideo.style, localVideoStyles);
+
+  // Adicionar ou remover a classe de espelhamento, se necessário
+  if (localVideo.style.transform === "scaleX(-1)") {
+    localVideo.style.transform = "";
+    remoteVideo.style.transform = "scaleX(-1)";
+  } else {
+    localVideo.style.transform = "scaleX(-1)";
+    remoteVideo.style.transform = "";
+  }
 });
 
 const configuration = {
