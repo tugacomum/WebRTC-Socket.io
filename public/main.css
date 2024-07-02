@@ -69,6 +69,7 @@ canvas {
 
 .controllers-wrapper #disableCameraButton img,
 .controllers-wrapper #muteButton img,
+.controllers-wrapper #swipCameraButton img,
 .controllers-wrapper #switchCameraButton img {
   width: 50%;
 }
@@ -99,4 +100,21 @@ canvas {
 .draw-wrapper #switchLocalVideoButton img,
 .draw-wrapper #undoButton img {
   width: 50%;
+}
+
+.controllers-wrapper #swipCameraButton {
+  display: none;
+}
+
+.mobile-only > img {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .controllers-wrapper #swipCameraButton {
+    display:flex;
+  }
+  .mobile-only > img {
+    display: block;
+  }
 }

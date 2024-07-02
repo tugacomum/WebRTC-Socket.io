@@ -1,25 +1,72 @@
-// Get the room ID from the URL query parameters
 const urlParams = new URLSearchParams(window.location.search);
 const roomId = urlParams.get("roomId");
 
-// Local variables
 const drawingCanvas = document.getElementById("drawingCanvas");
 const deleteButton = document.getElementById("deleteButton");
 const undoButton = document.getElementById("undoButton");
 const switchCameraButton = document.getElementById("switchCameraButton");
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
+const switchCameraDeviceButton = document.getElementById("swipCameraButton");
 
 const ctx = drawingCanvas.getContext("2d");
 const drawingData = [];
 
-// Connect to the Socket.IO server
 const socket = io();
 let isDrawing = false;
 let isCameraEnabled = true;
 let isAudioEnabled = true;
 let currentPath = [];
 let drawingPath = null;
+
+let currentFacingMode = 'user';
+
+switchCameraDeviceButton.addEventListener("click", () => {
+  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+  switchCameraStream();
+});
+
+function switchCameraStream() {
+  navigator.mediaDevices
+    .getUserMedia({ video: { facingMode: currentFacingMode }, audio: true })
+    .then((stream) => {
+      const localVideo = document.getElementById("localVideo");
+      const tracks = localVideo.srcObject.getTracks();
+      
+      tracks.forEach(track => track.stop());
+
+      localVideo.srcObject = stream;
+      
+      const sender = peerConnection.getSenders().find(s => s.track.kind === 'video');
+      sender.replaceTrack(stream.getVideoTracks()[0]);
+    })
+    .catch((error) => {
+      console.error("Error accessing media devices:", error);
+    });
+}
+
+function isMobileDevice() {
+  return /Mobi|Android/i.test(navigator.userAgent);
+}
+
+if (isMobileDevice()) {
+  if (confirm("Deseja entrar em modo de tela cheia?")) {
+    enterFullScreen();
+  }
+}
+
+function enterFullScreen() {
+  const elem = document.documentElement;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen();
+  } else if (elem.mozRequestFullScreen) { 
+    elem.mozRequestFullScreen();
+  } else if (elem.webkitRequestFullscreen) { 
+    elem.webkitRequestFullscreen();
+  } else if (elem.msRequestFullscreen) { 
+    elem.msRequestFullscreen();
+  }
+}
 
 function redrawDrawings() {
   ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
@@ -44,11 +91,9 @@ window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
 switchCameraButton.addEventListener("click", () => {
-  // Guardar referências aos vídeos
   const localVideo = document.getElementById("localVideo");
   const remoteVideo = document.getElementById("remoteVideo");
 
-  // Guardar os estilos atuais dos vídeos
   const localVideoStyles = {
     width: localVideo.style.width,
     height: localVideo.style.height,
@@ -73,16 +118,13 @@ switchCameraButton.addEventListener("click", () => {
     marginRight: remoteVideo.style.marginRight,
   };
 
-  // Trocar os vídeos entre si
   const tempStream = localVideo.srcObject;
   localVideo.srcObject = remoteVideo.srcObject;
   remoteVideo.srcObject = tempStream;
 
-  // Aplicar estilos aos vídeos após a troca
   Object.assign(localVideo.style, remoteVideoStyles);
   Object.assign(remoteVideo.style, localVideoStyles);
 
-  // Adicionar ou remover a classe de espelhamento, se necessário
   if (localVideo.style.transform === "scaleX(-1)") {
     localVideo.style.transform = "";
     remoteVideo.style.transform = "scaleX(-1)";
@@ -103,29 +145,24 @@ const configuration = {
   ],
 };
 
-// Get the local video stream
 navigator.mediaDevices
   .getUserMedia({ video: true, audio: true })
   .then((stream) => {
     localVideo.srcObject = stream;
     localVideo.style.transform = "scaleX(-1)";
 
-    // Create a new WebRTC peer connection
     const peerConnection = new RTCPeerConnection(configuration);
 
-    // Add the local stream to the peer connection
     stream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, stream);
     });
 
-    // Listen for ICE candidates and send them to the other peer
     peerConnection.addEventListener("icecandidate", (event) => {
       if (event.candidate) {
         socket.emit("ice-candidate", event.candidate);
       }
     });
 
-    // Listen for remote tracks and add them to the remote video element
     peerConnection.addEventListener("track", (event) => {
       if (!remoteVideo.srcObject) {
         remoteVideo.srcObject = new MediaStream();
@@ -134,7 +171,6 @@ navigator.mediaDevices
       remoteVideo.srcObject.addTrack(event.track);
     });
 
-    // Send the offer to the other peer
     peerConnection
       .createOffer()
       .then((offer) => {
@@ -145,7 +181,6 @@ navigator.mediaDevices
         console.error("Error creating offer:", error);
       });
 
-    // Handle the received offer
     socket.on("offer", (offer) => {
       peerConnection
         .setRemoteDescription(offer)
@@ -159,21 +194,18 @@ navigator.mediaDevices
         });
     });
 
-    // Handle the received answer
     socket.on("answer", (answer) => {
       peerConnection.setRemoteDescription(answer).catch((error) => {
         console.error("Error setting remote description:", error);
       });
     });
 
-    // Handle the received ICE candidate
     socket.on("ice-candidate", (candidate) => {
       peerConnection.addIceCandidate(candidate).catch((error) => {
         console.error("Error adding ICE candidate:", error);
       });
     });
 
-    // Disable or enable the camera
     const disableCameraButton = document.getElementById("disableCameraButton");
     disableCameraButton.addEventListener("click", () => {
       if (isCameraEnabled) {
@@ -190,7 +222,6 @@ navigator.mediaDevices
       isCameraEnabled = !isCameraEnabled;
     });
 
-    // Mute/unmute the audio
     const muteButton = document.getElementById("muteButton");
     muteButton.addEventListener("click", () => {
       if (isAudioEnabled) {
@@ -233,7 +264,6 @@ navigator.mediaDevices
       drawingCanvas.dispatchEvent(mouseEvent);
     });
 
-    // Draw on the canvas
     drawingCanvas.addEventListener("mousemove", (e) => {
       if (isDrawing) {
         draw(e);
@@ -288,7 +318,7 @@ navigator.mediaDevices
 
     function undoDrawing() {
       if (drawingData.length > 0) {
-        drawingData.pop(); // Remove the last drawing
+        drawingData.pop();
         redrawDrawings();
       }
     }
@@ -317,8 +347,6 @@ navigator.mediaDevices
     console.error("Error accessing media devices:", error);
   });
 
-// Handle user-connected event
 socket.on("user-connected", (userId) => {});
 
-// Handle user-disconnected event
 socket.on("user-disconnected", (userId) => {});
