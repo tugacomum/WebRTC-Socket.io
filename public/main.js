@@ -7,7 +7,6 @@ const undoButton = document.getElementById("undoButton");
 const switchCameraButton = document.getElementById("switchCameraButton");
 const localVideo = document.getElementById("localVideo");
 const remoteVideo = document.getElementById("remoteVideo");
-const switchCameraDeviceButton = document.getElementById("swipCameraButton");
 
 const ctx = drawingCanvas.getContext("2d");
 const drawingData = [];
@@ -20,32 +19,6 @@ let currentPath = [];
 let drawingPath = null;
 
 let currentFacingMode = "user";
-
-switchCameraDeviceButton.addEventListener("click", () => {
-  currentFacingMode = currentFacingMode === "user" ? "environment" : "user";
-  switchCameraStream();
-});
-
-function switchCameraStream() {
-  navigator.mediaDevices
-    .getUserMedia({ video: { facingMode: currentFacingMode }, audio: true })
-    .then((stream) => {
-      const localVideo = document.getElementById("localVideo");
-      const tracks = localVideo.srcObject.getTracks();
-
-      tracks.forEach((track) => track.stop());
-
-      localVideo.srcObject = stream;
-
-      const sender = peerConnection
-        .getSenders()
-        .find((s) => s.track.kind === "video");
-      sender.replaceTrack(stream.getVideoTracks()[0]);
-    })
-    .catch((error) => {
-      console.error("Error accessing media devices:", error);
-    });
-}
 
 function isMobileDevice() {
   return (
